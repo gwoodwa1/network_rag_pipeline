@@ -1,0 +1,62 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "sections": {
+      "@container": "@list"
+    }
+  },
+  "@graph": [
+    {
+      "@context": {
+        "@vocab": "https://schema.org/",
+        "sections": {
+          "@container": "@list"
+        }
+      },
+      "@type": "Document",
+      "@id": "architecturemd",
+      "filename": "architecture.md",
+      "title": "architecture.md",
+      "description": "",
+      "dateCreated": "",
+      "author": "",
+      "sections": [
+        {
+          "@type": "Section",
+          "@id": "architecturemd-sec-2-system-architecture-design",
+          "title": "System Architecture Design",
+          "level": 1,
+          "content": "This document outlines the high-level architecture of our distributed system."
+        },
+        {
+          "@type": "Section",
+          "@id": "architecturemd-sec-3-overview",
+          "title": "Overview",
+          "level": 2,
+          "content": "Our system follows a microservices architecture pattern with clear separation of concerns. The architecture is designed for scalability, maintainability, and fault tolerance.\n\nKey principles: - Microservices architecture - Event-driven communication - API-first design - Cloud-native deployment"
+        },
+        {
+          "@type": "Section",
+          "@id": "architecturemd-sec-4-core-components",
+          "title": "Core Components",
+          "level": 2,
+          "content": "### API Gateway\n\nThe API Gateway serves as the single entry point for all client requests. It handles: - Request routing and load balancing - Authentication and authorization - Rate limiting and throttling - Request/response transformation\n\n```yaml\napiGateway:\n  port: 8080\n  timeout: 30s\n  rateLimit: 1000/min\n  auth:\n    type: JWT\n    secret: ${JWT_SECRET}\n```\n\n### User Service\n\nManages user accounts, profiles, and authentication: - User registration and login - Profile management - Password reset functionality - Social authentication integration\n\n### Data Service\n\nHandles all data operations: - CRUD operations for business entities - Data validation and transformation - Caching layer integration - Database connection pooling"
+        },
+        {
+          "@type": "Section",
+          "@id": "architecturemd-sec-5-database-schema",
+          "title": "Database Schema",
+          "level": 2,
+          "content": "TablePurposeKey FieldsusersUser accountsid, email, password_hashprofilesUser profilesuser_id, name, avatar_urlsessionsActive sessionsid, user_id, expires_at"
+        },
+        {
+          "@type": "Section",
+          "@id": "architecturemd-sec-6-deployment-architecture",
+          "title": "Deployment Architecture",
+          "level": 2,
+          "content": "The system is deployed using Docker containers orchestrated by Kubernetes:\n\n```dockerfile\nFROM node:16-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 3000\nCMD [\"npm\", \"start\"]\n```"
+        }
+      ]
+    }
+  ]
+}

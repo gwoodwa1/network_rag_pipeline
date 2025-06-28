@@ -1,1 +1,69 @@
-
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "sections": {
+      "@container": "@list"
+    }
+  },
+  "@graph": [
+    {
+      "@context": {
+        "@vocab": "https://schema.org/",
+        "sections": {
+          "@container": "@list"
+        }
+      },
+      "@type": "Document",
+      "@id": "apimd",
+      "filename": "api.md",
+      "title": "api.md",
+      "description": "",
+      "dateCreated": "",
+      "author": "",
+      "sections": [
+        {
+          "@type": "Section",
+          "@id": "apimd-sec-2-rest-api-documentation",
+          "title": "REST API Documentation",
+          "level": 1,
+          "content": "This document provides comprehensive documentation for our REST API endpoints."
+        },
+        {
+          "@type": "Section",
+          "@id": "apimd-sec-3-authentication",
+          "title": "Authentication",
+          "level": 2,
+          "content": "All API endpoints require authentication using JWT tokens. Include the token in the Authorization header:\n\n```\nAuthorization: Bearer <your-jwt-token>\n```"
+        },
+        {
+          "@type": "Section",
+          "@id": "apimd-sec-4-user-endpoints",
+          "title": "User Endpoints",
+          "level": 2,
+          "content": "### POST /api/users/register\n\nRegister a new user account.\n\nRequest Body:\n\n```json\n{\n  \"email\": \"user@example.com\",\n  \"password\": \"securePassword123\",\n  \"name\": \"John Doe\"\n}\n```\n\nResponse:\n\n```json\n{\n  \"id\": \"user_123\",\n  \"email\": \"user@example.com\",\n  \"name\": \"John Doe\",\n  \"createdAt\": \"2024-01-20T10:00:00Z\"\n}\n```\n\n### POST /api/users/login\n\nAuthenticate user and receive JWT token.\n\nRequest Body:\n\n```json\n{\n  \"email\": \"user@example.com\",\n  \"password\": \"securePassword123\"\n}\n```\n\nResponse:\n\n```json\n{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"expiresIn\": 3600,\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"user@example.com\",\n    \"name\": \"John Doe\"\n  }\n}\n```"
+        },
+        {
+          "@type": "Section",
+          "@id": "apimd-sec-5-data-endpoints",
+          "title": "Data Endpoints",
+          "level": 2,
+          "content": "### GET /api/data/items\n\nRetrieve paginated list of items.\n\nQuery Parameters: - page: Page number (default: 1) - limit: Items per page (default: 20, max: 100) - sort: Sort field (id, name, createdAt) - order: Sort order (asc, desc)\n\nResponse:\n\n```json\n{\n  \"items\": [\n    {\n      \"id\": \"item_1\",\n      \"name\": \"Sample Item\",\n      \"description\": \"A sample item\",\n      \"createdAt\": \"2024-01-20T10:00:00Z\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 150,\n    \"pages\": 8\n  }\n}\n```\n\n### POST /api/data/items\n\nCreate a new item.\n\nRequest Body:\n\n```json\n{\n  \"name\": \"New Item\",\n  \"description\": \"Description of the new item\",\n  \"category\": \"electronics\"\n}\n```"
+        },
+        {
+          "@type": "Section",
+          "@id": "apimd-sec-6-error-handling",
+          "title": "Error Handling",
+          "level": 2,
+          "content": "The API uses standard HTTP status codes and returns error details in JSON format:\n\n```json\n{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Invalid input data\",\n    \"details\": [\n      {\n        \"field\": \"email\",\n        \"message\": \"Invalid email format\"\n      }\n    ]\n  }\n}\n```"
+        },
+        {
+          "@type": "Section",
+          "@id": "apimd-sec-7-rate-limiting",
+          "title": "Rate Limiting",
+          "level": 2,
+          "content": "API requests are limited to 1000 requests per hour per user. Rate limit information is included in response headers:\n\n```\nX-RateLimit-Limit: 1000\nX-RateLimit-Remaining: 999\nX-RateLimit-Reset: 1642694400\n```"
+        }
+      ]
+    }
+  ]
+}

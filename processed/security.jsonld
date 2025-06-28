@@ -1,0 +1,69 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "sections": {
+      "@container": "@list"
+    }
+  },
+  "@graph": [
+    {
+      "@context": {
+        "@vocab": "https://schema.org/",
+        "sections": {
+          "@container": "@list"
+        }
+      },
+      "@type": "Document",
+      "@id": "securitymd",
+      "filename": "security.md",
+      "title": "security.md",
+      "description": "",
+      "dateCreated": "",
+      "author": "",
+      "sections": [
+        {
+          "@type": "Section",
+          "@id": "securitymd-sec-2-security-guidelines",
+          "title": "Security Guidelines",
+          "level": 1,
+          "content": "This document outlines security best practices and implementation guidelines for our system."
+        },
+        {
+          "@type": "Section",
+          "@id": "securitymd-sec-3-authentication-authorization",
+          "title": "Authentication & Authorization",
+          "level": 2,
+          "content": "### JWT Token Security\n\nJSON Web Tokens (JWT) are used for stateless authentication:\n\nTokens expire after 1 hour for securityRefresh tokens are valid for 30 daysUse strong, random secrets for token signingImplement token blacklisting for logout\n\n```javascript\nconst jwt = require('jsonwebtoken');\n\nconst generateToken = (user) => {\n  return jwt.sign(\n    { id: user.id, email: user.email },\n    process.env.JWT_SECRET,\n    { expiresIn: '1h' }\n  );\n};\n```\n\n### Password Security\n\nPassword handling requirements: - Minimum 8 characters with mixed case, numbers, symbols - Hash passwords using bcrypt with salt rounds \u2265 12 - Implement password history to prevent reuse - Enforce password rotation every 90 days"
+        },
+        {
+          "@type": "Section",
+          "@id": "securitymd-sec-4-input-validation",
+          "title": "Input Validation",
+          "level": 2,
+          "content": "### SQL Injection Prevention\n\nAlways use parameterized queries or ORMs:\n\n```sql\n-- Bad: Direct string concatenation\nSELECT * FROM users WHERE email = '\" + userInput + \"'\n\n-- Good: Parameterized query\nSELECT * FROM users WHERE email = ?\n```\n\n### XSS Prevention\n\nSanitize all user inputs: - Escape HTML entities in output - Use Content Security Policy (CSP) headers - Validate input on both client and server side"
+        },
+        {
+          "@type": "Section",
+          "@id": "securitymd-sec-5-data-protection",
+          "title": "Data Protection",
+          "level": 2,
+          "content": "### Encryption at Rest\n\nSensitive data must be encrypted using AES-256:\n\n```python\nfrom cryptography.fernet import Fernet\n\ndef encrypt_sensitive_data(data, key):\n    cipher = Fernet(key)\n    encrypted_data = cipher.encrypt(data.encode())\n    return encrypted_data\n```\n\n### Encryption in Transit\n\nAll communications must use TLS 1.2 or higher: - HTTPS for web traffic - TLS for database connections - mTLS for service-to-service communication"
+        },
+        {
+          "@type": "Section",
+          "@id": "securitymd-sec-6-monitoring-logging",
+          "title": "Monitoring & Logging",
+          "level": 2,
+          "content": "### Security Event Logging\n\nLog all security-relevant events: - Authentication attempts (success/failure) - Authorization failures - Data access patterns - Admin actions\n\n### Incident Response\n\nIncident response procedures: 1. Immediate containment 2. Impact assessment 3. Evidence collection 4. System recovery 5. Post-incident review"
+        },
+        {
+          "@type": "Section",
+          "@id": "securitymd-sec-7-compliance-requirements",
+          "title": "Compliance Requirements",
+          "level": 2,
+          "content": "### GDPR Compliance\n\nData protection measures: - Right to be forgotten implementation - Data portability features - Consent management - Data minimization principles\n\n### SOC 2 Type II\n\nControl objectives: - Security controls testing - Availability monitoring - Processing integrity validation - Confidentiality protection - Privacy safeguards"
+        }
+      ]
+    }
+  ]
+}
