@@ -37,7 +37,7 @@ class MarkdownToJSONLD:
         for k, v in meta.items(): self.meta[k] = pf.stringify(v)
         logger.debug(f"Frontmatter: {self.meta}")
 
-    def new_section(self, title: str, level: int):
+    def new_section(self, title: str, level: int, primary: bool = False):
         if self.current and self.buffer:
             self.current['content'] = '\n\n'.join(self.buffer).strip()
             self.sections.append(self.current)
@@ -45,6 +45,14 @@ class MarkdownToJSONLD:
         self.count += 1
         sid = f"{slugify(self.filename)}-sec-{self.count}-{slugify(title)}"
         self.current = {'@type': 'Section', '@id': sid, 'title': title, 'level': level, 'content': ''}
+        self.current = {
+            '@type':   'Section',
+            '@id':     sid,
+            'title':   title,
+            'level':   level,
+            'content': '',
+            'primary': primary
+        }
         logger.debug(f"New section: {title}")
 
     def add_text(self, txt: str):
@@ -54,22 +62,45 @@ class MarkdownToJSONLD:
             logger.debug(f"Buffer: {txt[:30]}...")
 
     def build(self) -> Dict[str, Any]:
+        # 1) Flush the last section buffer into self.sections
         if self.current and self.buffer:
             self.current['content'] = '\n\n'.join(self.buffer).strip()
             self.sections.append(self.current)
-        doc: Dict[str, Any] = {
-            '@context': {'@vocab': 'https://schema.org/', 'sections': {'@container': '@list'}},
-            '@type': 'Document',
-            '@id': self.meta.get('id', slugify(self.filename)),
-            'filename': self.filename,
-            'title': self.meta.get('title', self.filename),
+
+        # 2) Construct the Document node (without mainEntity yet)
+        doc_node: Dict[str, Any] = {
+            '@type':       'Document',
+            '@id':         self.meta.get('id', slugify(self.filename)),
+            'filename':    self.filename,
+            'title':       self.meta.get('title', self.filename),
             'description': self.meta.get('description', ''),
             'dateCreated': self.meta.get('date', ''),
-            'author': self.meta.get('author', ''),
-            'sections': self.sections
+            'author':      self.meta.get('author', ''),
+            'sections':    self.sections[:]   # inline full section objects
         }
-        logger.info(f"Built JSON-LD for {self.filename}")
-        return {'@context': doc['@context'], '@graph': [doc]}
+
+        # ←───────────────────────────────────────────────────────────────────────────
+        # ADD THESE 3 LINES to pick the primary section as mainEntity:
+        for sec in self.sections:
+            if sec.get('primary'):                # assumes your action() set 'primary'=True
+                doc_node['mainEntity'] = sec['@id']
+                break
+        # ────────────────────────────────────────────────────────────────────────────
+
+        # 3) Build the JSON-LD context
+        context = {
+            '@vocab':     'https://schema.org/',
+            'sections':   {'@container': '@list'},
+            'mainEntity': {'@id': 'schema:mainEntity', '@type': '@id'}
+        }
+
+        # 4) Return the full JSON-LD graph
+        return {
+            '@context': context,
+            '@graph':   [doc_node] + self.sections
+        }
+
+
 
 
 def prepare(doc):
@@ -88,20 +119,51 @@ def prepare(doc):
 
 def action(elem, doc):
     md = doc.md2jsonld
+
+    # Handle headers (start new sections)
     if isinstance(elem, pf.Header):
         title = pf.stringify(elem)
-        lvl = elem.level
+        lvl   = elem.level
+
+        # Detect primary="true" attribute on the header
+        is_primary = elem.attributes.get('primary', 'false').lower() == 'true'
+
         if lvl <= 2:
-            md.new_section(title, lvl)
+            # Pass the primary flag into new_section
+            md.new_section(title, lvl, primary=is_primary)
         else:
-            md.add_text('#'*lvl + ' ' + title)
-    elif isinstance(elem, pf.Para): md.add_text(pf.stringify(elem))
-    elif isinstance(elem, pf.CodeBlock): md.add_text(f"```{elem.classes[0] if elem.classes else ''}\n{elem.text}\n```")
-    elif isinstance(elem, pf.Table): md.add_text(pf.stringify(elem))
-    elif isinstance(elem, pf.Image): md.add_text(f"![{pf.stringify(elem)}]({elem.url})")
-    elif isinstance(elem, (pf.BulletList, pf.OrderedList)): md.add_text(pf.stringify(elem))
-    elif isinstance(elem, pf.BlockQuote): txt=pf.stringify(elem); md.add_text('\n'.join(f"> {l}" for l in txt.split('\n')))
+            # For deeper headers, just record them as text
+            md.add_text('#' * lvl + ' ' + title)
+
+    # Paragraphs
+    elif isinstance(elem, pf.Para):
+        md.add_text(pf.stringify(elem))
+
+    # Code blocks
+    elif isinstance(elem, pf.CodeBlock):
+        lang = elem.classes[0] if elem.classes else ''
+        md.add_text(f"```{lang}\n{elem.text}\n```")
+
+    # Tables
+    elif isinstance(elem, pf.Table):
+        md.add_text(pf.stringify(elem))
+
+    # Images
+    elif isinstance(elem, pf.Image):
+        alt = pf.stringify(elem)
+        md.add_text(f"![{alt}]({elem.url})")
+
+    # Lists
+    elif isinstance(elem, (pf.BulletList, pf.OrderedList)):
+        md.add_text(pf.stringify(elem))
+
+    # Block quotes
+    elif isinstance(elem, pf.BlockQuote):
+        quote_lines = pf.stringify(elem).splitlines()
+        md.add_text('\n'.join(f"> {line}" for line in quote_lines))
+
     return None
+
 
 
 def finalize(doc):
