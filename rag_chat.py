@@ -52,27 +52,28 @@ class LLMClient(Protocol):
 # Concrete LLM Clients
 # -----------------------------------------------------------------------------
 class OpenAIClient:
-    """Client for OpenAI's ChatCompletion API."""
-    def __init__(self, api_key: str, model: str = "gpt-3.5-turbo") -> None:
+    def __init__(self, api_key: str, model: str = "gpt-3.5-turbo"):
+        import openai
         openai.api_key = api_key
         self.model = model
 
     def generate(self, system_prompt: str, user_prompt: str) -> str:
+        import openai
         try:
-            resp = openai.ChatCompletion.create(
+            resp = openai.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
+                    {"role": "user",   "content": user_prompt},
                 ],
                 max_tokens=1000,
                 temperature=0.7,
             )
             return resp.choices[0].message.content.strip()
-
         except Exception as e:
             logger.error("OpenAI API call failed: %s", e)
             raise LLMClientError("OpenAI generation error") from e
+
 
 class LocalLLMClient:
     """Client for local LLM endpoint (e.g., Ollama, LocalAI)."""
