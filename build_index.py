@@ -114,32 +114,37 @@ class MarkdownFilterRunner:
 # -----------------------------------------------------------------------------
 class ChunkExtractor:
     """Extracts text chunks from JSON-LD document graphs."""
-
     @staticmethod
     def extract(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         chunks: List[Dict[str, Any]] = []
-        for node in data.get('@graph', []):
-            if node.get('@type') != 'Document':
+        graph = data.get('@graph', [])
+        # The first node is the Document
+        doc = next((n for n in graph if n.get('@type') == 'Document'), {})
+        base_info = {
+            'doc_id':   doc.get('@id', ''),
+            'filename': doc.get('filename', ''),
+            'title':    doc.get('title', '')
+        }
+
+        # Subsequent nodes are Section objects
+        for sec in graph:
+            if sec.get('@type') != 'Section':
                 continue
-            base_info = {
-                'doc_id': node.get('@id', ''),
-                'filename': node.get('filename', ''),
-                'title': node.get('title', '')
-            }
-            for sec in node.get('sections', []):
-                text = sec.get('content', '').strip()
-                if not text:
-                    continue
-                chunks.append({
-                    **base_info,
-                    'section_id': sec.get('@id', ''),
-                    'section_title': sec.get('title', ''),
-                    'level': sec.get('level', 0),
-                    'text': text
-                })
+            text = sec.get('content', '').strip()
+            if not text:
+                continue
+
+            chunks.append({
+                **base_info,
+                'section_id':    sec.get('@id', ''),
+                'section_title': sec.get('title', ''),
+                'level':         sec.get('level', 0),
+                'text':          text,
+                'primary':       sec.get('primary', False)   # preserve the flag
+            })
+
         logger.info("Extracted %d chunks", len(chunks))
         return chunks
-
 # -----------------------------------------------------------------------------
 # FAISS Index Builder
 # -----------------------------------------------------------------------------
