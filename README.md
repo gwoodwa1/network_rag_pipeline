@@ -193,28 +193,54 @@ Your `processed/*.jsonld` files follow this structure:
 {
   "@context": {
     "@vocab": "https://schema.org/",
-    "sections": { "@container": "@list" }
+    "mainEntity": {
+      "@id": "schema:mainEntity",
+      "@type": "@id"
+    },
+    "trainingQuestions": {
+      "@container": "@list"
+    },
+    "relatedProducts": {
+      "@container": "@list"
+    },
+    "topics": {
+      "@container": "@list"
+    },
+    "keywords": {
+      "@container": "@list"
+    }
   },
   "@graph": [
     {
       "@type": "Document",
-      "@id": "network-architecture",
-      "filename": "network.md",
-      "title": "Corporate Network Overview",
-      "description": "High-level topology...",
-      "dateCreated": "2025-06-01",
-      "author": "NetOps Team",
-      "sections": [
-        {
-          "@type": "Section",
-          "@id": "network-architecture-sec-1-core-switches",
-          "title": "Core Switches",
-          "level": 1,
-          "content": "Details about switch models..."
-        }
-      ]
-    }
-  ]
+      "@id": "junos_gnmimd",
+      "filename": "junos_gnmi.md",
+      "title": "GNMI without Certificates on Juniper",
+      "description": "Config guide to run JunOS GNMI in insecure mode without certs",
+      "dateCreated": "2024-01-20",
+      "author": "Network Automation Team",
+      "version": "1.0",
+      "category": "network-knowledge-base",
+      "keywords": [
+        "gnmi",
+        "juniper",
+        "grpc",
+        "insecure-mode"
+      ],
+      "trainingQuestions": [
+        "How do I configure JunOS GNMI without certificates?",
+        "What port does JunOS use for insecure GNMI?"
+      ],
+      "relatedProducts": [
+        "vMX 22.3R1.11",
+        "vQFX 19.4R1.10"
+      ],
+      "topics": [
+        "Network Telemetry",
+        "Juniper Configuration"
+      ],
+      "mainEntity": "junos_gnmimd-sec-3-how-to-setup-a-junos-device-for-gnmi-without-certificates"
+    },
 }
 ```
 
