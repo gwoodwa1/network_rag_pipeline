@@ -1,4 +1,3 @@
-# md2jsonld.py
 #!/usr/bin/env python3
 """
 Panflute filter to convert Markdown to JSON-LD with embedded content chunks.
@@ -7,7 +6,7 @@ import panflute as pf
 import re
 import json
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -33,9 +32,18 @@ class MarkdownToJSONLD:
     def set_filename(self, fname: str):
         self.filename = fname
 
+    def to_camel(self, s: str) -> str:
+        parts = s.split('_')
+        return parts[0] + ''.join(word.capitalize() for word in parts[1:])
+
     def process_frontmatter(self, meta: pf.MetaMap):
-        for k, v in meta.items(): self.meta[k] = pf.stringify(v)
+        for k, v in meta.items():
+            camel_key = self.to_camel(k)
+            val = [pf.stringify(item) for item in v] if isinstance(v, pf.MetaList) else pf.stringify(v)
+            self.meta[camel_key] = val
+            self.meta[k] = val  # Keep original snake_case as well
         logger.debug(f"Frontmatter: {self.meta}")
+
 
     def new_section(self, title: str, level: int, primary: bool = False):
         if self.current and self.buffer:
@@ -44,7 +52,6 @@ class MarkdownToJSONLD:
         self.buffer = []
         self.count += 1
         sid = f"{slugify(self.filename)}-sec-{self.count}-{slugify(title)}"
-        self.current = {'@type': 'Section', '@id': sid, 'title': title, 'level': level, 'content': ''}
         self.current = {
             '@type':   'Section',
             '@id':     sid,
@@ -62,44 +69,46 @@ class MarkdownToJSONLD:
             logger.debug(f"Buffer: {txt[:30]}...")
 
     def build(self) -> Dict[str, Any]:
-        # 1) Flush the last section buffer into self.sections
         if self.current and self.buffer:
             self.current['content'] = '\n\n'.join(self.buffer).strip()
             self.sections.append(self.current)
 
-        # 2) Construct the Document node (without mainEntity yet)
         doc_node: Dict[str, Any] = {
             '@type':       'Document',
             '@id':         self.meta.get('id', slugify(self.filename)),
             'filename':    self.filename,
             'title':       self.meta.get('title', self.filename),
             'description': self.meta.get('description', ''),
-            'dateCreated': self.meta.get('date', ''),
+            'dateCreated': self.meta.get('created', ''),
             'author':      self.meta.get('author', ''),
-            'sections':    self.sections[:]   # inline full section objects
+            'version':     self.meta.get('version', ''),
+            'category':    self.meta.get('category', ''),
+            'keywords':    self.meta.get('keywords', []),
+            'trainingQuestions': self.meta.get('trainingQuestions', self.meta.get('training_questions', [])),
+            'relatedProducts': self.meta.get('relatedProducts', self.meta.get('related_products', [])),
+            'topics':      self.meta.get('topics', [])
+            # 🔸 Do not include 'sections': self.sections
         }
 
-        # ←───────────────────────────────────────────────────────────────────────────
-        # ADD THESE 3 LINES to pick the primary section as mainEntity:
         for sec in self.sections:
-            if sec.get('primary'):                # assumes your action() set 'primary'=True
+            if sec.get('primary'):
                 doc_node['mainEntity'] = sec['@id']
                 break
-        # ────────────────────────────────────────────────────────────────────────────
 
-        # 3) Build the JSON-LD context
         context = {
             '@vocab':     'https://schema.org/',
-            'sections':   {'@container': '@list'},
-            'mainEntity': {'@id': 'schema:mainEntity', '@type': '@id'}
+            'mainEntity': {'@id': 'schema:mainEntity', '@type': '@id'},
+            'trainingQuestions': {'@container': '@list'},
+            'relatedProducts': {'@container': '@list'},
+            'topics': {'@container': '@list'},
+            'keywords': {'@container': '@list'}
         }
 
-        # 4) Return the full JSON-LD graph
+        # Return doc + sections as individual graph nodes
         return {
             '@context': context,
-            '@graph':   [doc_node] + self.sections
+            '@graph': [doc_node] + self.sections
         }
-
 
 
 
@@ -107,57 +116,38 @@ def prepare(doc):
     md = MarkdownToJSONLD()
     doc.md2jsonld = md
     fname = getattr(doc, 'filename', None)
-    if fname:
-        md.set_filename(fname)
-    else:
-        md.set_filename('unknown')
+    md.set_filename(fname or 'unknown')
     if doc.metadata:
         md.process_frontmatter(doc.metadata)
     md.new_section('Document Introduction', 1)
+    logger.info(f"Parsed frontmatter keys: {list(doc.md2jsonld.meta.keys())}")
     return doc
 
 
 def action(elem, doc):
     md = doc.md2jsonld
 
-    # Handle headers (start new sections)
     if isinstance(elem, pf.Header):
         title = pf.stringify(elem)
-        lvl   = elem.level
-
-        # Detect primary="true" attribute on the header
+        lvl = elem.level
         is_primary = elem.attributes.get('primary', 'false').lower() == 'true'
-
         if lvl <= 2:
-            # Pass the primary flag into new_section
             md.new_section(title, lvl, primary=is_primary)
         else:
-            # For deeper headers, just record them as text
             md.add_text('#' * lvl + ' ' + title)
 
-    # Paragraphs
     elif isinstance(elem, pf.Para):
         md.add_text(pf.stringify(elem))
-
-    # Code blocks
     elif isinstance(elem, pf.CodeBlock):
         lang = elem.classes[0] if elem.classes else ''
         md.add_text(f"```{lang}\n{elem.text}\n```")
-
-    # Tables
     elif isinstance(elem, pf.Table):
         md.add_text(pf.stringify(elem))
-
-    # Images
     elif isinstance(elem, pf.Image):
         alt = pf.stringify(elem)
         md.add_text(f"![{alt}]({elem.url})")
-
-    # Lists
     elif isinstance(elem, (pf.BulletList, pf.OrderedList)):
         md.add_text(pf.stringify(elem))
-
-    # Block quotes
     elif isinstance(elem, pf.BlockQuote):
         quote_lines = pf.stringify(elem).splitlines()
         md.add_text('\n'.join(f"> {line}" for line in quote_lines))
@@ -165,16 +155,28 @@ def action(elem, doc):
     return None
 
 
-
 def finalize(doc):
-    out = doc.md2jsonld.build()
-    doc.content = [pf.RawBlock(json.dumps(out, indent=2), format='json')]
-    return doc
+    jsonld = {
+        "@context": {
+            "@vocab": "https://schema.org/",
+            "sections": {"@container": "@list"},
+            "mainEntity": {"@id": "schema:mainEntity", "@type": "@id"},
+            "trainingQuestions": {"@container": "@list"},
+            "relatedProducts": {"@container": "@list"},
+            "topics": {"@container": "@list"},
+            "keywords": {"@container": "@list"},
+        },
+        "@graph": doc.md2jsonld.build()["@graph"]
+    }
+
+    return pf.RawBlock(json.dumps(jsonld, indent=2), format="json")
+
 
 
 def main(doc=None):
     logger.info('Running filter')
     return pf.run_filter(action, prepare=prepare, finalize=finalize, doc=doc)
+
 
 if __name__ == '__main__':
     main()
