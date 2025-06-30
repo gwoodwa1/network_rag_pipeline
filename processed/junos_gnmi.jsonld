@@ -1,0 +1,69 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "mainEntity": {
+      "@id": "schema:mainEntity",
+      "@type": "@id"
+    },
+    "trainingQuestions": {
+      "@container": "@list"
+    },
+    "relatedProducts": {
+      "@container": "@list"
+    },
+    "topics": {
+      "@container": "@list"
+    },
+    "keywords": {
+      "@container": "@list"
+    }
+  },
+  "@graph": [
+    {
+      "@type": "Document",
+      "@id": "junos_gnmimd",
+      "filename": "junos_gnmi.md",
+      "title": "GNMI without Certificates on Juniper",
+      "description": "Config guide to run JunOS GNMI in insecure mode without certs",
+      "dateCreated": "2024-01-20",
+      "author": "Network Automation Team",
+      "version": "1.0",
+      "category": "network-knowledge-base",
+      "keywords": [
+        "gnmi",
+        "juniper",
+        "grpc",
+        "insecure-mode"
+      ],
+      "trainingQuestions": [
+        "How do I configure JunOS GNMI without certificates?",
+        "What port does JunOS use for insecure GNMI?"
+      ],
+      "relatedProducts": [
+        "vMX 22.3R1.11",
+        "vQFX 19.4R1.10"
+      ],
+      "topics": [
+        "Network Telemetry",
+        "Juniper Configuration"
+      ],
+      "mainEntity": "junos_gnmimd-sec-3-how-to-setup-a-junos-device-for-gnmi-without-certificates"
+    },
+    {
+      "@type": "Section",
+      "@id": "junos_gnmimd-sec-2-how-to-setup-a-junos-device-for-gnmi",
+      "title": "How to setup a JunOS device for GNMI",
+      "level": 2,
+      "content": "The configuration is fairly simple for a lab scenario where we will not use certificates and use the insecure mode. Please refer to the Juniper Site for details on configuration using Certificates.\n\nThis was tested on the vMX 22.3R1.11 and vQFX 19.4R1.10 Note: Although configuration is accepted on the vQFX it was not possible to get GNMI working on this platform. This could be due to the fact that the insecure mode is not supported in earlier releases",
+      "primary": false
+    },
+    {
+      "@type": "Section",
+      "@id": "junos_gnmimd-sec-3-how-to-setup-a-junos-device-for-gnmi-without-certificates",
+      "title": "How to setup a JunOS device for GNMI without certificates",
+      "level": 2,
+      "content": "```\nset system services extension-service request-response grpc clear-text port 57400\nset system services extension-service request-response grpc max-connections 4\n```\n\nYou will also need this for the reponse to be sent back to the client.\n\n```\nset system services extension-service request-response grpc routing-instance mgmt_junos\n```",
+      "primary": true
+    }
+  ]
+}
