@@ -77,27 +77,45 @@ class MarkdownFilterRunner:
 
     def extract_jsonld(self, md_path: Path) -> Dict[str, Any]:
         """Run Panflute filter in-process to extract JSON-LD from markdown."""
-        try:
-            import panflute as pf  # type: ignore
-            import md2jsonld  # Panflute filter module
+        import panflute as pf
+        import md2jsonld
+        import io
 
-            text = md_path.read_text(encoding='utf-8')
-            pf_output = pf.convert_text(text, input_format='markdown', output_format='panflute')
-            doc = pf.Doc(*pf_output) if isinstance(pf_output, list) else pf_output
+        try:
+            # Use pandoc to convert markdown to JSON AST
+            cmd = [
+                'pandoc', str(md_path),
+                '--to', 'json'
+            ]
+            result = run(cmd, check=True, capture_output=True, text=True)
+            logger.debug("Pandoc JSON AST output length: %d", len(result.stdout))
+
+            # Load into panflute doc object
+            doc = pf.load(io.StringIO(result.stdout))
             doc.filename = md_path.name
 
-            doc = md2jsonld.prepare(doc)
-            doc.walk(md2jsonld.action, doc=doc)
-            doc = md2jsonld.finalize(doc)
+            if not doc:
+                raise ValueError("Panflute failed to load document")
 
-            first = doc.content[0]
-            if isinstance(first, pf.RawBlock) and first.format == 'json':
-                return json.loads(first.text)
-            raise ValueError("Unexpected filter output format")
+            logger.debug("Document metadata keys: %s", list(doc.metadata.keys()) if doc.metadata else "No metadata")
+
+            # Run Panflute filter in-process
+            doc = md2jsonld.prepare(doc)
+            doc = pf.run_filter(md2jsonld.action, doc=doc)
+
+            # Pull final JSON-LD result
+            jsonld_data = doc.md2jsonld.build()
+
+            if jsonld_data and jsonld_data.get('@graph'):
+                logger.info("✅ Extracted %d graph entries from %s", len(jsonld_data['@graph']), md_path.name)
+            else:
+                logger.warning("⚠️ Extracted JSON-LD from %s is empty or malformed", md_path.name)
+
+            return jsonld_data
 
         except Exception as e:
-            logger.warning("Filter extraction failed for %s: %s", md_path.name, e)
-            # Fallback minimal JSON-LD structure
+            logger.error("❌ Exception during JSON-LD extraction for %s: %s", md_path.name, e)
+            logger.debug("Full traceback:", exc_info=True)
             return {
                 '@context': {'@vocab': 'https://schema.org/'},
                 '@graph': [{
@@ -108,6 +126,7 @@ class MarkdownFilterRunner:
                     'sections': []
                 }]
             }
+
 
 # -----------------------------------------------------------------------------
 # Chunk Extraction
@@ -145,6 +164,7 @@ class ChunkExtractor:
 
         logger.info("Extracted %d chunks", len(chunks))
         return chunks
+
 # -----------------------------------------------------------------------------
 # FAISS Index Builder
 # -----------------------------------------------------------------------------
@@ -194,6 +214,19 @@ class VectorIndexBuilder:
 # Main Execution Flow
 # -----------------------------------------------------------------------------
 def main() -> None:
+    import sys
+    
+    # Enable debug logging if requested
+    if '--log-level' in sys.argv:
+        try:
+            idx = sys.argv.index('--log-level')
+            if idx + 1 < len(sys.argv):
+                level = getattr(logging, sys.argv[idx + 1].upper())
+                logging.getLogger().setLevel(level)
+                logger.setLevel(level)
+        except (ValueError, AttributeError):
+            pass
+    
     input_dir = Path('output')
     proc_dir = Path('processed')
     index_dir = Path('index')
