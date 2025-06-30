@@ -1,20 +1,28 @@
 ---
-id: gnmi_junos_configuration
-type: http://example.com/network-configuration#NetworkConfigurationDocument
-title: "Configuring GNMI on Juniper JUNOS Routers"
-description: >
-  Step-by-step guide to enable GNMI on Junos devices in insecure (clear-text) mode
-  without using certificates.
+id: junos_gnmimd
+title: "GNMI without Certificates on Juniper"
+description: "Config guide to run JunOS GNMI in insecure mode without certs"
 created: 2024-01-20
-author: "API Team"
+author: "Network Automation Team"
 version: "1.0"
 category: "network-knowledge-base"
-tags:
-  - GNMI
-  - Juniper
-  - JUNOS
-  - network-configuration
+keywords:
+  - gnmi
+  - juniper
+  - grpc
+  - insecure-mode
+training_questions:
+  - How do I configure JunOS GNMI without certificates?
+  - What port does JunOS use for insecure GNMI?
+  - My Juniper JunOS GNMI configuration is not working, am I missing any config?
+related_products:
+  - vMX 22.3R1.11
+  - vQFX 19.4R1.10
+topics:
+  - Network Telemetry
+  - Juniper Configuration
 ---
+
 
 ## How to setup a JunOS device for GNMI 
 
