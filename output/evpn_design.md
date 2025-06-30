@@ -1,17 +1,47 @@
 ---
-id: evpn_leaf_spine_design
-type: http://example.com/network-design#NetworkDesignDocument
+id: "evpn_leaf_spine_design"
 title: "EVPN Leaf-Spine Network Design"
 description: >
-  DataCorp’s EVPN fabric: 2 spines, 100 leafs, BGP underlay, VXLAN overlay.
-created: 2025-06-24
+  Scalable BGP-EVPN-based data center fabric with VXLAN overlay and multi-tenant segmentation.
 author: "Gary Woodward"
+created: "2025-06-24"
 version: "1.0"
-tags:
+category: "network-design"
+type: "http://example.com/network-design#NetworkDesignDocument"
+keywords:
   - EVPN
+  - VXLAN
   - Leaf-Spine
+  - BGP
   - DataCenter
+  - Multitenancy
+  - Underlay
+  - Overlay
+  - Automation
+topics:
+  - EVPN Architecture
+  - BGP Control Plane
+  - Data Center Fabric Design
+  - VXLAN Overlay Networks
+  - Network Security
+  - Infrastructure as Code
+relatedProducts:
+  - "DataCorp Fabric v1.0"
+trainingQuestions:
+  - "What role does EVPN play in this architecture?"
+  - "How are BGP ASNs structured for underlay and overlay?"
+  - "What security features are applied at the tunnel level?"
+  - "How does the VXLAN VNI allocation strategy support scalability?"
+  - "What are the benefits of using L3VNIs in this fabric?"
+  - "How is automation integrated with the design?"
+complianceStandards:
+  - PCI DSS
+  - SOC 2 Type II
+  - NIST CSF
+status: "approved"
+reviewed: "2025-06-26"
 ---
+
 # EVPN Leaf-Spine Network Design Document
 
 ## Executive Summary

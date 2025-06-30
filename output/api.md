@@ -2,10 +2,32 @@
 title: "REST API Documentation"
 description: "Complete API reference for client integration"
 author: "API Team"
-date: "2024-01-20"
-id: "api-documentation"
+created: "2024-01-20"
+version: "1.0"
+id: "rest_api_doc"
 category: "api"
+keywords:
+  - api
+  - rest
+  - jwt
+  - authentication
+  - pagination
+  - error-handling
+  - client-integration
+topics:
+  - REST API Design
+  - Secure API Access
+  - Client Development
+relatedProducts:
+  - "API Platform v1.0"
+trainingQuestions:
+  - "How do I authenticate using JWT with the API?"
+  - "How can I retrieve a paginated list of items?"
+  - "What does the login endpoint return?"
+  - "How does the API handle input validation errors?"
+  - "What rate limits are enforced per user?"
 ---
+
 
 # REST API Documentation
 

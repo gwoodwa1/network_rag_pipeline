@@ -2,10 +2,33 @@
 title: "System Architecture Design"
 description: "Overall system architecture and core components"
 author: "Engineering Team"
-date: "2024-01-15"
+created: "2024-01-15"
+version: "1.0"
 id: "system-architecture"
 category: "architecture"
+keywords:
+  - system-architecture
+  - microservices
+  - api-gateway
+  - kubernetes
+  - docker
+  - jwt-authentication
+  - cloud-native
+topics:
+  - Software Architecture
+  - Distributed Systems
+  - Cloud-Native Design
+  - DevOps Practices
+relatedProducts:
+  - "Core Platform v2.0"
+trainingQuestions:
+  - "What is the role of the API Gateway in this architecture?"
+  - "How is authentication managed across services?"
+  - "What principles drive this system architecture?"
+  - "What are the core services in the design?"
+  - "How is the deployment managed using Kubernetes?"
 ---
+
 
 # System Architecture Design
 

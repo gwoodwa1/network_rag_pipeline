@@ -14,7 +14,6 @@ keywords:
 training_questions:
   - How do I configure JunOS GNMI without certificates?
   - What port does JunOS use for insecure GNMI?
-  - My Juniper JunOS GNMI configuration is not working, am I missing any config?
 related_products:
   - vMX 22.3R1.11
   - vQFX 19.4R1.10

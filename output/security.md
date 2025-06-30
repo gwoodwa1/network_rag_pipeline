@@ -1,11 +1,46 @@
 ---
-title: "Security Guidelines"
-description: "Security best practices and implementation guidelines"
-author: "Security Team"
-date: "2024-01-25"
 id: "security-guidelines"
+title: "Security Guidelines"
+description: >
+  Security best practices covering authentication, encryption, input validation, and compliance controls.
+author: "Security Team"
+created: "2024-01-25"
+version: "1.0"
 category: "security"
+type: "http://example.com/security#SecurityPolicyDocument"
+keywords:
+  - JWT
+  - Password Policy
+  - XSS
+  - SQL Injection
+  - TLS
+  - Encryption
+  - GDPR
+  - SOC 2
+  - Logging
+  - Incident Response
+topics:
+  - Authentication & Authorization
+  - Secure Coding Practices
+  - Encryption at Rest & in Transit
+  - Security Monitoring & Logging
+  - Regulatory Compliance
+  - Incident Response Planning
+trainingQuestions:
+  - "How should JWT tokens be configured securely?"
+  - "What password hashing algorithm and rotation policy is recommended?"
+  - "How do you mitigate XSS and SQL injection risks?"
+  - "What logging events are critical for security auditing?"
+  - "What controls are required for GDPR and SOC 2 compliance?"
+relatedStandards:
+  - GDPR
+  - SOC 2 Type II
+  - NIST SP 800-53
+  - OWASP Top 10
+status: "approved"
+reviewed: "2024-01-30"
 ---
+
 
 # Security Guidelines
 
