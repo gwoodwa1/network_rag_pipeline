@@ -141,16 +141,28 @@ Place all your network documentation in Markdown under the `output/` directory. 
 
 ```markdown
 ---
-id: network-architecture
-title: "Corporate Network Overview"
-description: "High-level topology, device configs, and VLAN assignments"
-author: "NetOps Team"
-date: "2025-06-01"
+id: junos_gnmimd
+title: "GNMI without Certificates on Juniper"
+description: "Config guide to run JunOS GNMI in insecure mode without certs"
+created: 2024-01-20
+author: "Network Automation Team"
+version: "1.0"
+category: "network-knowledge-base"
+keywords:
+  - gnmi
+  - juniper
+  - grpc
+  - insecure-mode
+training_questions:
+  - How do I configure JunOS GNMI without certificates?
+  - What port does JunOS use for insecure GNMI?
+related_products:
+  - vMX 22.3R1.11
+  - vQFX 19.4R1.10
+topics:
+  - Network Telemetry
+  - Juniper Configuration
 ---
-
-# Core Switches
-
-Details about switch models, uplink ports, etc.
 ```
 
 ### 2. Convert to JSON‑LD
