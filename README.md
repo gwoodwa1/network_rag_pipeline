@@ -211,8 +211,7 @@ Your `processed/*.jsonld` files follow this structure:
           "title": "Core Switches",
           "level": 1,
           "content": "Details about switch models..."
-        },
-        ...
+        }
       ]
     }
   ]
@@ -225,30 +224,25 @@ Your `processed/*.jsonld` files follow this structure:
 2. **Load JSON-LD** via Cypher:
 
    ```cypher
+   CALL apoc.load.json("file:///processed/network.jsonld") YIELD value
+   UNWIND value['@graph'] AS doc
+   MERGE (d:Document {id: doc['@id']})
+   SET d.title = doc.title, d.description = doc.description
+   
+   UNWIND doc.sections AS sec
+   MERGE (s:Section {id: sec['@id']})
+   SET s.title = sec.title, s.content = sec.content
+   MERGE (d)-[:HAS_SECTION]->(s);
    ```
 
-encode files:
-CALL apoc.load.json("file:///processed/network.jsonld") YIELD value
-UNWIND value\['@graph'] AS doc
-MERGE (d\:Document {id: doc\['@id']})
-SET d.title = doc.title, d.description = doc.description
-
-UNWIND doc.sections AS sec
-MERGE (s\:Section {id: sec\['@id']})
-SET s.title = sec.title, s.content = sec.content
-MERGE (d)-\[:HAS\_SECTION]->(s);
-
-```
 3. **Explore**: Run graph queries, visualize topologies, or connect sections to device nodes in your network graph.
-
 
 ## Customization & Extensions
 
 - **Custom Context**: Modify `@context` in `md2jsonld.py` to map to your network ontology (e.g., Cisco IOS, `netconf:Interface`).  
 - **Additional Elements**: Extend `action()` to handle custom Panflute elements (e.g., diagrams, YAML code blocks).  
 - **Alternative Embeddings**: Swap out the SentenceTransformer model in `build_index.py` for domain‑specific embeddings.  
-- **Graph DB Plugins**: Provide scripts for Amazon Neptune's bulk loader or JanusGraph’s TinkerPop loader.
-
+- **Graph DB Plugins**: Provide scripts for Amazon Neptune's bulk loader or JanusGraph's TinkerPop loader.
 
 ## Troubleshooting & FAQs
 
@@ -256,7 +250,6 @@ MERGE (d)-\[:HAS\_SECTION]->(s);
 - **No chunks indexed**: Ensure your sections contain non-empty content.  
 - **LLM errors**: Verify your API key or local LLM endpoint is reachable.  
 - **Graph import issues**: Confirm file paths and APOC plugin availability.
-
 
 ## Contributing
 
@@ -268,9 +261,6 @@ MERGE (d)-\[:HAS\_SECTION]->(s);
 
 Please adhere to our code style, include tests for new functionality, and update documentation accordingly.
 
-
 ## License
 
 This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
-
-```
