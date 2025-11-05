@@ -1,4 +1,4 @@
-# RAG Network Documentation Toolkit
+# RAG Network Documentation Toolkit 
 
 This repository provides a complete pipeline for processing Markdown-based network documentation, converting it into JSON-LD, indexing content for semantic search, and offering an interactive RAG (Retrieval-Augmented Generation) chat interface. By emitting JSON-LD, our documentation becomes immediately graph‑ready: you can ingest the output into any graph database (e.g., Neo4j, TigerGraph, Amazon Neptune) to perform advanced network analyses, visualize topology, and drive next‑generation knowledge applications.
 
